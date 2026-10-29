@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบส่งแผนการจัดการเรียนรู้และงานวิจัย - โรงเรียนโสตศึกษาจังหวัดตาก ปีการศึกษา 2569</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js สำหรับแสดงกราฟสถิติ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Prompt & Sarabun -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'Sarabun', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Prompt', 'Sarabun', sans-serif;
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased flex flex-col min-h-screen">
+
+    <!-- Header & Navigation -->
+    <header class="bg-gradient-to-r from-sky-800 via-sky-700 to-indigo-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white p-2 rounded-full shadow-md text-sky-800">
+                        <i class="fa-solid font-bold fa-graduation-cap text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg md:text-xl leading-tight">โรงเรียนโสตศึกษาจังหวัดตาก</h1>
+                        <p class="text-xs md:text-sm text-sky-200">ระบบส่งแผนการจัดการเรียนรู้และงานวิจัย ปีการศึกษา 2569</p>
+                    </div>
+                </div>
+                
+                <!-- Desktop Nav -->
+                <nav class="hidden md:flex space-x-1">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white/20 text-white shadow">
+                        <i class="fa-solid fa-chart-pie mr-2"></i>ภาพรวม & ร้อยละ
+                    </button>
+                    <button onclick="switchTab('submit')" id="nav-submit" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-white/10 text-sky-100">
+                        <i class="fa-solid fa-paper-plane mr-2"></i>ส่งผลงาน (แผน/วิจัย)
+                    </button>
+                    <button onclick="switchTab('list')" id="nav-list" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-white/10 text-sky-100">
+                        <i class="fa-solid fa-list-check mr-2"></i>รายการที่ส่งแล้ว
+                    </button>
+                    <button onclick="openConfigModal()" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-500 hover:bg-amber-600 text-white transition-all shadow">
+                        <i class="fa-solid fa-gear mr-1"></i> ตั้งค่า API
+                    </button>
+                </nav>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center space-x-2">
+                    <button onclick="openConfigModal()" class="p-2 rounded-lg bg-amber-500 text-white text-xs">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+                    <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="p-2 rounded-lg hover:bg-white/10 focus:outline-none">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Drawer -->
+        <div id="mobile-menu" class="hidden md:hidden bg-sky-900 border-t border-sky-700 px-4 pt-2 pb-4 space-y-2">
+            <button onclick="switchTab('dashboard'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-white hover:bg-sky-800">
+                <i class="fa-solid fa-chart-pie mr-2"></i>ภาพรวม & ร้อยละ
+            </button>
+            <button onclick="switchTab('submit'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-sky-100 hover:bg-sky-800">
+                <i class="fa-solid fa-paper-plane mr-2"></i>ส่งผลงาน (แผน/วิจัย)
+            </button>
+            <button onclick="switchTab('list'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-sky-100 hover:bg-sky-800">
+                <i class="fa-solid fa-list-check mr-2"></i>รายการที่ส่งแล้ว
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+        <!-- ================= TAB 1: DASHBOARD ================= -->
+        <section id="tab-dashboard" class="tab-content space-y-8">
+
+            <!-- 1. ปุ่มเลือกสลับการดูภาพรวมวิจัย หรือแผนการสอน -->
+            <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold uppercase text-slate-400 tracking-wider px-2">เลือกมุมมองข้อมูล:</span>
+                </div>
+                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                    <button onclick="setDashboardCategory('all')" id="cat-btn-all" class="cat-btn flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-sky-600 text-white shadow">
+                        <i class="fa-solid fa-layer-group mr-1.5"></i>ภาพรวมทั้งหมด
+                    </button>
+                    <button onclick="setDashboardCategory('แผนการจัดการเรียนรู้')" id="cat-btn-plan" class="cat-btn flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200">
+                        <i class="fa-solid fa-book-bookmark mr-1.5"></i>แผนการสอน
+                    </button>
+                    <button onclick="setDashboardCategory('รายงานวิจัยในชั้นเรียน')" id="cat-btn-research" class="cat-btn flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200">
+                        <i class="fa-solid fa-flask mr-1.5"></i>รายงานวิจัยในชั้นเรียน
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. นับเวลาถอยหลัง -->
+            <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 rounded-2xl p-5 text-white shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3 text-center md:text-left">
+                    <div class="bg-white/20 p-3 rounded-2xl text-2xl hidden sm:block">
+                        <i class="fa-solid fa-stopwatch"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base md:text-lg flex items-center justify-center md:justify-start gap-2">
+                            <i class="fa-solid fa-hourglass-half sm:hidden"></i> นับถอยหลังกำหนดส่งแผนการสอนและงานวิจัย
+                        </h3>
+                        <p class="text-xs text-amber-100">วันสิ้นสุดการส่ง: 29 พฤศจิกายน 2569 เวลา 23:59 น.</p>
+                    </div>
+                </div>
+                <!-- Timer Box -->
+                <div class="flex items-center gap-2 sm:gap-3 text-center font-mono">
+                    <div class="bg-white/20 backdrop-blur-md px-3 py-2 rounded-xl min-w-[60px]">
+                        <span id="timer-days" class="block text-xl font-bold">00</span>
+                        <span class="text-[10px] font-sans text-amber-100 uppercase">วัน</span>
+                    </div>
+                    <span class="text-xl font-bold">:</span>
+                    <div class="bg-white/20 backdrop-blur-md px-3 py-2 rounded-xl min-w-[60px]">
+                        <span id="timer-hours" class="block text-xl font-bold">00</span>
+                        <span class="text-[10px] font-sans text-amber-100 uppercase">ชั่วโมง</span>
+                    </div>
+                    <span class="text-xl font-bold">:</span>
+                    <div class="bg-white/20 backdrop-blur-md px-3 py-2 rounded-xl min-w-[60px]">
+                        <span id="timer-minutes" class="block text-xl font-bold">00</span>
+                        <span class="text-[10px] font-sans text-amber-100 uppercase">นาที</span>
+                    </div>
+                    <span class="text-xl font-bold">:</span>
+                    <div class="bg-white/20 backdrop-blur-md px-3 py-2 rounded-xl min-w-[60px]">
+                        <span id="timer-seconds" class="block text-xl font-bold">00</span>
+                        <span class="text-[10px] font-sans text-amber-100 uppercase">วินาที</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. การ์ดตัวเลขสรุปข้อมูลแบบชัดเจน -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Card 1 -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center justify-between">
+                    <div>
+                        <p id="card-submitted-label" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">ส่งงานแล้ว (อย่างน้อย 1 ชิ้น)</p>
+                        <h3 class="text-2xl font-bold text-emerald-600 mt-1" id="stat-total-submitted">0 <span class="text-xs font-normal text-slate-500">/ 42 คน</span></h3>
+                        <p class="text-xs text-emerald-600 font-medium mt-1"><i class="fa-solid fa-arrow-up mr-1"></i>คิดเป็น <span id="stat-percent-submitted">0.0</span>%</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-file-circle-check"></i>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center justify-between">
+                    <div>
+                        <p id="card-pending-label" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">ยังไม่ได้ส่งงานเลย</p>
+                        <h3 class="text-2xl font-bold text-rose-600 mt-1" id="stat-total-pending">42 <span class="text-xs font-normal text-slate-500">/ 42 คน</span></h3>
+                        <p class="text-xs text-rose-500 font-medium mt-1">คิดเป็น <span id="stat-percent-pending">100.0</span>%</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-user-xmark"></i>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">จำนวนไฟล์บันทึกในระบบ</p>
+                        <h3 class="text-2xl font-bold text-indigo-600 mt-1" id="stat-total-files">0 <span class="text-xs font-normal text-slate-500">ไฟล์</span></h3>
+                        <p class="text-xs text-indigo-500 font-medium mt-1">ประจำปีการศึกษา 2569</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-folder-tree"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. กราฟการส่งงาน -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Doughnut Chart -->
+                <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-donut text-sky-600"></i> สัดส่วนการส่งผลงาน
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">แสดงอัตราส่วนครูที่ส่งแล้วเทียบกับครูที่ยังไม่ส่ง</p>
+                    </div>
+                    <div class="my-6 relative flex justify-center items-center h-64">
+                        <canvas id="statusDoughnutChart"></canvas>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-center text-xs font-medium border-t pt-4">
+                        <div class="p-2 rounded-lg bg-emerald-50 text-emerald-700">
+                            ส่งเรียบร้อย: <span id="donut-sent-label" class="font-bold">0%</span>
+                        </div>
+                        <div class="p-2 rounded-lg bg-rose-50 text-rose-700">
+                            ยังไม่ส่ง: <span id="donut-pending-label" class="font-bold">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bar Chart by Groups -->
+                <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-bar text-sky-600"></i> ร้อยละการส่งผลงานแยกตามกลุ่มสาระ / ฝ่ายงาน
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">แสดงความคืบหน้าคิดเป็นเปอร์เซ็นต์ (%) ในแต่ละกลุ่มสาระ</p>
+                    </div>
+                    <div class="my-4 relative h-64">
+                        <canvas id="groupBarChart"></canvas>
+                    </div>
+                    <p class="text-xs text-slate-400 text-right">* ข้อมูลอัปเดตเรียลไทม์ตามการบันทึกใน Google Sheets</p>
+                </div>
+            </div>
+
+            <!-- 5. ข้อมูลอื่นๆ แบบรายละเอียด -->
+            <div class="space-y-8">
+                <!-- Summary Detail Box -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-list-ol text-sky-600"></i> สรุปรายละเอียดสถานะการส่งงาน
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">รายละเอียดสรุปจำนวนคนส่งแผนการสอนและงานวิจัยจากครูทั้งหมด 42 คน</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Sent Item Box -->
+                        <div class="p-4 bg-emerald-50/60 border border-emerald-100 rounded-2xl flex items-center justify-between">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-lg shadow-sm">
+                                    <i class="fa-solid fa-user-check"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-sm">ครูที่ส่งงานเรียบร้อยแล้ว</h4>
+                                    <p class="text-xs text-slate-500">บันทึกข้อมูลเรียบร้อยในระบบ</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span id="detail-sent-count" class="text-2xl font-bold text-emerald-600">0</span>
+                                <span id="detail-total-teachers-1" class="text-xs text-slate-500 font-medium"> / 42 คน</span>
+                                <p class="text-xs text-emerald-700 font-semibold mt-0.5">คิดเป็น <span id="detail-sent-percent">0.0</span>%</p>
+                            </div>
+                        </div>
+
+                        <!-- Pending Item Box -->
+                        <div class="p-4 bg-rose-50/60 border border-rose-100 rounded-2xl flex items-center justify-between">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center text-lg shadow-sm">
+                                    <i class="fa-solid fa-user-xmark"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-sm">ครูที่ยังไม่ได้ส่งงาน</h4>
+                                    <p class="text-xs text-slate-500">อยู่ระหว่างติดตามการส่ง</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span id="detail-pending-count" class="text-2xl font-bold text-rose-600">42</span>
+                                <span id="detail-total-teachers-2" class="text-xs text-slate-500 font-medium"> / 42 คน</span>
+                                <p class="text-xs text-rose-700 font-semibold mt-0.5">คิดเป็น <span id="detail-pending-percent">100.0</span>%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar Visual -->
+                    <div class="pt-2">
+                        <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1.5">
+                            <span>อัตราส่วนการส่งผลงานภาพรวม</span>
+                            <span id="progress-text-percent" class="text-sky-600">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden p-0.5">
+                            <div id="progress-bar-fill" class="bg-gradient-to-r from-sky-500 to-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Status Tables -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-user-check text-sky-600"></i> รายชื่อติดตามการส่งผลงานครูรายบุคคล ทั้ง 42 ท่าน
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">แสดงสถานะการส่งพร้อมชื่อเรื่องแผนการสอน และชื่อเรื่องงานวิจัยรายบุคคล</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <input type="text" id="search-teacher" onkeyup="filterTeachers()" placeholder="ค้นหาชื่อครู..." class="px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none w-40 sm:w-52">
+                            <select id="filter-status" onchange="filterTeachers()" class="px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                                <option value="all">สถานะทั้งหมด</option>
+                                <option value="sent">ส่งแล้วอย่างน้อย 1 ชิ้น</option>
+                                <option value="pending">ยังไม่ส่งเลย</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs sm:text-sm">
+                            <thead class="bg-slate-50 text-slate-600 uppercase font-semibold border-b border-slate-100">
+                                <tr>
+                                    <th class="py-3.5 px-4">ชื่อ - สกุล ครู</th>
+                                    <th class="py-3.5 px-4">ชื่อแผนการจัดการเรียนรู้</th>
+                                    <th class="py-3.5 px-4">ชื่อเรื่องงานวิจัยในชั้นเรียน</th>
+                                    <th class="py-3.5 px-4 text-center">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teacher-status-tbody" class="divide-y divide-slate-100">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= TAB 2: SUBMIT FORM ================= -->
+        <section id="tab-submit" class="tab-content hidden max-w-3xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
+                <div class="border-b border-slate-100 pb-4 mb-6">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up text-sky-600"></i> แบบฟอร์มส่งแผนการสอน / งานวิจัย
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">เลือกประเภทเอกสาร และอัปโหลดไฟล์ PDF จากเครื่องเพื่อบันทึกเข้า Google Drive อัตโนมัติ</p>
+                </div>
+
+                <form id="submission-form" onsubmit="handleFormSubmit(event)" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">ประเภทเอกสารที่ต้องการส่ง <span class="text-rose-500">*</span></label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-sky-50 transition">
+                                <input type="radio" name="form-type" value="แผนการจัดการเรียนรู้" checked class="text-sky-600 focus:ring-sky-500">
+                                <span class="text-xs font-medium text-slate-800"><i class="fa-solid fa-book-bookmark mr-1.5 text-sky-600"></i>แผนการจัดการเรียนรู้</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-sky-50 transition">
+                                <input type="radio" name="form-type" value="รายงานวิจัยในชั้นเรียน" class="text-sky-600 focus:ring-sky-500">
+                                <span class="text-xs font-medium text-slate-800"><i class="fa-solid fa-flask mr-1.5 text-indigo-600"></i>รายงานวิจัยในชั้นเรียน</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">ชื่อ - นามสกุล ครูผู้ส่ง <span class="text-rose-500">*</span></label>
+                        <select id="form-fullname" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none transition">
+                            <option value="">-- เลือกชื่อคุณครู --</option>
+                            <!-- List 42 Teachers populated via JS -->
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">กลุ่มสาระการเรียนรู้ / ฝ่ายงาน <span class="text-rose-500">*</span></label>
+                            <select id="form-group" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none transition">
+                                <option value="">-- เลือกกลุ่มสาระ --</option>
+                                <option value="ภาษาไทย">ภาษาไทย</option>
+                                <option value="คณิตศาสตร์">คณิตศาสตร์</option>
+                                <option value="วิทยาศาสตร์และเทคโนโลยี">วิทยาศาสตร์และเทคโนโลยี</option>
+                                <option value="สังคมศึกษา ศาสนาฯ">สังคมศึกษา ศาสนา และวัฒนธรรม</option>
+                                <option value="สุขศึกษาและพลศึกษา">สุขศึกษาและพลศึกษา</option>
+                                <option value="ศิลปะ">ศิลปะ</option>
+                                <option value="การงานอาชีพ">การงานอาชีพ</option>
+                                <option value="ภาษาต่างประเทศ">ภาษาต่างประเทศ</option>
+                                <option value="การศึกษาพิเศษ/ปฐมวัย">การศึกษาพิเศษ/ปฐมวัย</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ภาคเรียน / ปีการศึกษา <span class="text-rose-500">*</span></label>
+                            <select id="form-term" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none transition">
+                                <option value="ภาคเรียนที่ 2 ปีการศึกษา 2569">ภาคเรียนที่ 2 ปีการศึกษา 2569</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">ชื่อเรื่อง / ชื่อรายวิชา <span class="text-rose-500">*</span></label>
+                        <input type="text" id="form-title" required placeholder="เช่น วิชาภาษาไทย ป.3 หรือ งานวิจัยการพัฒนาทักษะภาษามือ" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none transition">
+                    </div>
+
+                    <!-- Direct File Upload Component -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">อัปโหลดไฟล์เอกสาร (เฉพาะ PDF เท่านั้น) <span class="text-rose-500">*</span></label>
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl hover:border-sky-500 transition-colors bg-slate-50/50 cursor-pointer" onclick="document.getElementById('form-file').click()">
+                            <div class="space-y-2 text-center">
+                                <div id="upload-icon-box" class="mx-auto h-12 w-12 text-slate-400 flex items-center justify-center text-3xl">
+                                    <i class="fa-solid fa-file-pdf"></i>
+                                </div>
+                                <div class="text-sm text-slate-600">
+                                    <span class="font-medium text-sky-600 hover:text-sky-500">คลิกเพื่อเลือกไฟล์ PDF</span> หรือลากไฟล์มาวางที่นี่
+                                </div>
+                                <p id="file-name-display" class="text-xs text-slate-500">รองรับเฉพาะไฟล์ .pdf เท่านั้น (ขนาดไม่เกิน 100MB)</p>
+                            </div>
+                            <input id="form-file" type="file" required class="hidden" onchange="handleFileSelect(event)" accept="application/pdf,.pdf">
+                        </div>
+                    </div>
+
+                    <!-- Optional Fallback Link -->
+                    <div class="pt-1">
+                        <button type="button" onclick="toggleLinkInput()" class="text-xs text-sky-600 hover:underline flex items-center gap-1 font-medium">
+                            <i class="fa-solid fa-link"></i> ต้องการแนบลิงก์ Google Drive แทน?
+                        </button>
+                        <div id="link-input-container" class="hidden mt-2">
+                            <input type="url" id="form-link" placeholder="https://drive.google.com/file/d/..." class="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">หมายเหตุ / คำอธิบายเพิ่มเติม</label>
+                        <textarea id="form-note" rows="3" placeholder="ระบุรายละเอียดเพิ่มเติม (ถ้ามี)" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none transition"></textarea>
+                    </div>
+
+                    <div class="pt-3">
+                        <button type="submit" id="submit-btn" class="w-full py-3 px-6 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> ยืนยันการส่งเอกสาร
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: SUBMITTED LIST ================= -->
+        <section id="tab-list" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-folder-open text-sky-600"></i> รายการแผนการสอนและงานวิจัยที่ส่งแล้ว
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">รวมไฟล์เอกสารที่มีการบันทึกในระบบเรียบร้อยแล้ว</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <input type="text" id="search-submissions" onkeyup="renderSubmissionsTable()" placeholder="ค้นหาชื่อครู/ชื่อเรื่อง/กลุ่มสาระ..." class="px-3.5 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none w-full sm:w-56">
+                        
+                        <button onclick="downloadFilteredCSV()" class="px-3 py-2 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-excel"></i> ดาวน์โหลดตาราง (CSV)
+                        </button>
+                        <button onclick="downloadAllLinksTxt()" class="px-3 py-2 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-lines"></i> รวมลิงก์ทั้งหมด (TXT)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs sm:text-sm">
+                        <thead class="bg-slate-50 text-slate-600 uppercase font-semibold border-b border-slate-100">
+                            <tr>
+                                <th class="py-3.5 px-4">วัน-เวลาที่ส่ง</th>
+                                <th class="py-3.5 px-4">ประเภทงาน</th>
+                                <th class="py-3.5 px-4">ชื่อ - สกุล</th>
+                                <th class="py-3.5 px-4">ชื่อเรื่อง/วิชา</th>
+                                <th class="py-3.5 px-4">กลุ่มสาระ</th>
+                                <th class="py-3.5 px-4 text-center">จัดการ</th>
+                                <th class="py-3.5 px-4 text-center">สถานะ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="submissions-tbody" class="divide-y divide-slate-100">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Real Teachers Master List (All 42 Teachers)
+        const TEACHERS_MASTER = [
+            { name: "นายสุเทพ น้อยทุ่ง", group: "การศึกษาพิเศษ/ปฐมวัย" },
+            { name: "นายสมศักดิ์ จันทร์บุตร", group: "การศึกษาพิเศษ/ปฐมวัย" },
+            { name: "นางศศิวิมล สุริยะ", group: "ภาษาไทย" },
+            { name: "นางปาริชาติ แก้วคง", group: "คณิตศาสตร์" },
+            { name: "นางสิรีธร บุญสา", group: "วิทยาศาสตร์และเทคโนโลยี" },
+            { name: "นางอรวรรณ จากสูงเนิน", group: "สังคมศึกษา ศาสนาฯ" },
+            { name: "นางสาววีรัตน์ชญา วารี", group: "สุขศึกษาและพลศึกษา" },
+            { name: "นางสาวรัตติกาล จันทร์ออน", group: "ศิลปะ" },
+            { name: "นางสาวนภเกตน์ วัฒนโฉมยง", group: "การงานอาชีพ" },
+            { name: "นางวิจิตรา ดงแสง", group: "ภาษาต่างประเทศ" },
+            { name: "นางสาวปรารถนา แซ่ฮุ้น", group: "ภาษาไทย" },
+            { name: "นางสาวจินดาพร จิรวรรธยง", group: "คณิตศาสตร์" },
+            { name: "นางสาวภัคศรัณย์ มีเง้า", group: "วิทยาศาสตร์และเทคโนโลยี" },
+            { name: "นางเกศริน รอดเขียว", group: "สังคมศึกษา ศาสนาฯ" },
+            { name: "นางสาวพัชรินทร์ วัฒนโชคกุล", group: "สุขศึกษาและพลศึกษา" },
+            { name: "นางวิภา เจริญกุล", group: "ศิลปะ" },
+            { name: "นางสาวจุฬาลักษณ์ วิทยาวงศ์กุล", group: "การงานอาชีพ" },
+            { name: "นายธัชชัย สมวัน", group: "ภาษาต่างประเทศ" },
+            { name: "นางสาวรรณรต แก่งศิริ", group: "การศึกษาพิเศษ/ปฐมวัย" },
+            { name: "นางสาวสุรนารี นาคจีน", group: "การศึกษาพิเศษ/ปฐมวัย" },
+            { name: "นางสาวภัทรนุช ศิริพงษ์", group: "ภาษาไทย" },
+            { name: "นายสุขชัย ปัญญาวรลักษณ์", group: "คณิตศาสตร์" },
+            { name: "นางสาวจุฑาวัลย์ แสนคำอ้าย", group: "วิทยาศาสตร์และเทคโนโลยี" },
+            { name: "นางสาวสุดา เตสทิ", group: "สังคมศึกษา ศาสนาฯ" },
+            { name: "นางสาวหนึ่งฤทัย เปรมทอง", group: "สุขศึกษาและพลศึกษา" },
+            { name: "นายโตมร พิทักษ์วัฒนกุล", group: "ศิลปะ" },
+            { name: "นางสาวเมธินาถ ไกรรัตน์", group: "การงานอาชีพ" },
+            { name: "นางปวรี อิงคง", group: "ภาษาต่างประเทศ" },
+            { name: "นายธนภัทร ลีลา", group: "การศึกษาพิเศษ/ปฐมวัย" },
+            { name: "นายปฏิภาณ คำรินทร์", group: "การศึกษาพิเศษ/ปฐมวัย" },
+            { name: "นางสาวพบพร มังคะละ", group: "ภาษาไทย" },
+            { name: "นายกิตติพงศ์ อุดโนนตาด", group: "คณิตศาสตร์" },
+            { name: "นางสาวเรณุกา เพิ่มพูล", group: "วิทยาศาสตร์และเทคโนโลยี" },
+            { name: "นายเชาว์วัฒน์ จิตรกล้า", group: "สังคมศึกษา ศาสนาฯ" },
+            { name: "นายไตรภพ สำเภา", group: "สุขศึกษาและพลศึกษา" },
+            { name: "นางสาวพชรพรรณ เครือเอม", group: "ศิลปะ" },
+            { name: "นายปรีชา สุขจะนัน", group: "การงานอาชีพ" },
+            { name: "นางสาวพรประภา เอี่ยมโอน", group: "ภาษาต่างประเทศ" },
+            { name: "นางสาวรินสา วัลลังกา", group: "การศึกษาพิเศษ/ปฐมวัย" },
+            { name: "นางสาวแสงเดือน สงสนั่น", group: "การศึกษาพิเศษ/ปฐมวัย" },
+            { name: "นางสาวศิริลักษณ์ ศักดิ์ประพันธ์", group: "ภาษาไทย" },
+            { name: "นายอัษฎาวุฒิ แสงมณี", group: "สุขศึกษาและพลศึกษา" }
+        ];
+
+        let mockSubmissions = [];
+        let currentCategory = 'all'; 
+        let scriptUrl = localStorage.getItem('gsheet_script_url') || '';
+        let statusDoughnutChartInstance = null;
+        let groupBarChartInstance = null;
+        let selectedFileData = null;
+        let countdownTimerInterval = null;
+
+        const DEADLINE_DATE = new Date('2026-11-29T23:59:59');
+
+        function startCountdownTimer() {
+            if (countdownTimerInterval) clearInterval(countdownTimerInterval);
+
+            function updateTimer() {
+                const now = new Date();
+                const diff = DEADLINE_DATE - now;
+
+                if (diff <= 0) {
+                    document.getElementById('timer-days').innerText = '00';
+                    document.getElementById('timer-hours').innerText = '00';
+                    document.getElementById('timer-minutes').innerText = '00';
+                    document.getElementById('timer-seconds').innerText = '00';
+                    return;
+                }
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('timer-days').innerText = String(days).padStart(2, '0');
+                document.getElementById('timer-hours').innerText = String(hours).padStart(2, '0');
+                document.getElementById('timer-minutes').innerText = String(minutes).padStart(2, '0');
+                document.getElementById('timer-seconds').innerText = String(seconds).padStart(2, '0');
+            }
+
+            updateTimer();
+            countdownTimerInterval = setInterval(updateTimer, 1000);
+        }
+
+        window.onload = function() {
+            populateTeacherDropdown();
+            startCountdownTimer();
+            if (scriptUrl) {
+                fetchLiveData();
+            } else {
+                initDashboard();
+            }
+        };
+
+        function populateTeacherDropdown() {
+            const dropdown = document.getElementById('form-fullname');
+            if (!dropdown) return;
+            dropdown.innerHTML = `<option value="">-- เลือกชื่อคุณครู --</option>`;
+            TEACHERS_MASTER.forEach(t => {
+                dropdown.innerHTML += `<option value="${t.name}">${t.name}</option>`;
+            });
+
+            dropdown.addEventListener('change', function() {
+                const selected = TEACHERS_MASTER.find(t => t.name === this.value);
+                if (selected) {
+                    document.getElementById('form-group').value = selected.group;
+                }
+            });
+        }
+
+        function switchTab(tabId) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.add('hidden'));
+
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if (targetTab) {
+                targetTab.classList.remove('hidden');
+            }
+
+            const navBtns = document.querySelectorAll('.nav-btn');
+            navBtns.forEach(btn => {
+                btn.className = "nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-white/10 text-sky-100";
+            });
+
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeBtn) {
+                activeBtn.className = "nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white/20 text-white shadow";
+            }
+
+            if (tabId === 'dashboard') {
+                initDashboard();
+            } else if (tabId === 'list') {
+                renderSubmissionsTable();
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function setDashboardCategory(cat) {
+            currentCategory = cat;
+
+            const btns = document.querySelectorAll('.cat-btn');
+            btns.forEach(b => {
+                b.className = "cat-btn flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200";
+            });
+
+            if (cat === 'all') {
+                document.getElementById('cat-btn-all').className = "cat-btn flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-sky-600 text-white shadow";
+                document.getElementById('card-submitted-label').innerText = "ส่งผลงานแล้ว (อย่างน้อย 1 ชิ้น)";
+                document.getElementById('card-pending-label').innerText = "ยังไม่ได้ส่งผลงานเลย";
+            } else if (cat === 'แผนการจัดการเรียนรู้') {
+                document.getElementById('cat-btn-plan').className = "cat-btn flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-sky-600 text-white shadow";
+                document.getElementById('card-submitted-label').innerText = "ส่งแผนการสอนแล้ว";
+                document.getElementById('card-pending-label').innerText = "ยังไม่ได้ส่งแผนการสอน";
+            } else if (cat === 'รายงานวิจัยในชั้นเรียน') {
+                document.getElementById('cat-btn-research').className = "cat-btn flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-indigo-600 text-white shadow";
+                document.getElementById('card-submitted-label').innerText = "ส่งรายงานวิจัยแล้ว";
+                document.getElementById('card-pending-label').innerText = "ยังไม่ได้ส่งงานวิจัย";
+            }
+
+            initDashboard();
+        }
+
+        function initDashboard() {
+            const totalTeachers = TEACHERS_MASTER.length;
+
+            document.getElementById('detail-total-teachers-1').innerText = ` / ${totalTeachers} คน`;
+            document.getElementById('detail-total-teachers-2').innerText = ` / ${totalTeachers} คน`;
+
+            let filteredList = mockSubmissions;
+            if (currentCategory !== 'all') {
+                filteredList = mockSubmissions.filter(item => item.type === currentCategory);
+            }
+
+            const submittedTeacherSet = new Set(filteredList.map(item => item.fullname.trim()));
+            const submittedCount = submittedTeacherSet.size;
+            const pendingCount = Math.max(0, totalTeachers - submittedCount);
+
+            const submittedPercent = ((submittedCount / totalTeachers) * 100).toFixed(1);
+            const pendingPercent = ((pendingCount / totalTeachers) * 100).toFixed(1);
+
+            document.getElementById('stat-total-submitted').innerHTML = `${submittedCount} <span class="text-xs font-normal text-slate-500">/ ${totalTeachers} คน</span>`;
+            document.getElementById('stat-percent-submitted').innerText = submittedPercent;
+
+            document.getElementById('stat-total-pending').innerHTML = `${pendingCount} <span class="text-xs font-normal text-slate-500">/ ${totalTeachers} คน</span>`;
+            document.getElementById('stat-percent-pending').innerText = pendingPercent;
+
+            document.getElementById('stat-total-files').innerHTML = `${filteredList.length} <span class="text-xs font-normal text-slate-500">ไฟล์</span>`;
+
+            document.getElementById('detail-sent-count').innerText = submittedCount;
+            document.getElementById('detail-sent-percent').innerText = submittedPercent;
+
+            document.getElementById('detail-pending-count').innerText = pendingCount;
+            document.getElementById('detail-pending-percent').innerText = pendingPercent;
+
+            document.getElementById('progress-text-percent').innerText = `${submittedPercent}%`;
+            document.getElementById('progress-bar-fill').style.width = `${submittedPercent}%`;
+
+            document.getElementById('donut-sent-label').innerText = `${submittedPercent}%`;
+            document.getElementById('donut-pending-label').innerText = `${pendingPercent}%`;
+
+            renderDoughnutChart(submittedCount, pendingCount);
+            renderBarChart(filteredList);
+            renderTeacherStatusTable();
+        }
+
+        function renderDoughnutChart(submitted, pending) {
+            const ctx = document.getElementById('statusDoughnutChart').getContext('2d');
+            if (statusDoughnutChartInstance) statusDoughnutChartInstance.destroy();
+
+            statusDoughnutChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['ส่งเรียบร้อยแล้ว', 'ยังไม่ได้ส่ง'],
+                    datasets: [{
+                        data: [submitted, pending],
+                        backgroundColor: ['#10b981', '#f43f5e'],
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        function renderBarChart(filteredList) {
+            const ctx = document.getElementById('groupBarChart').getContext('2d');
+            if (groupBarChartInstance) groupBarChartInstance.destroy();
+
+            const groups = [
+                "ภาษาไทย", "คณิตศาสตร์", "วิทยาศาสตร์และเทคโนโลยี",
+                "สังคมศึกษา ศาสนาฯ", "สุขศึกษาและพลศึกษา", "ศิลปะ",
+                "การงานอาชีพ", "ภาษาต่างประเทศ", "การศึกษาพิเศษ/ปฐมวัย"
+            ];
+
+            const percentages = groups.map(groupName => {
+                const groupTeachers = TEACHERS_MASTER.filter(t => t.group === groupName);
+                if (groupTeachers.length === 0) return 0;
+
+                const submittedGroupSet = new Set(
+                    filteredList
+                        .filter(item => item.group === groupName)
+                        .map(item => item.fullname.trim())
+                );
+
+                return Math.round((submittedGroupSet.size / groupTeachers.length) * 100);
+            });
+
+            groupBarChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: groups.map(g => g.length > 12 ? g.substring(0, 10) + '...' : g),
+                    datasets: [{
+                        label: 'ร้อยละความสำเร็จ (%)',
+                        data: percentages,
+                        backgroundColor: '#0284c7',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 100 } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function renderTeacherStatusTable() {
+            const tbody = document.getElementById('teacher-status-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const searchTerm = (document.getElementById('search-teacher')?.value || '').toLowerCase();
+            const statusFilter = document.getElementById('filter-status')?.value || 'all';
+
+            TEACHERS_MASTER.forEach(teacher => {
+                const teacherSubmissions = mockSubmissions.filter(item => item.fullname.trim() === teacher.name.trim());
+                
+                const plans = teacherSubmissions.filter(i => i.type === "แผนการจัดการเรียนรู้");
+                const researches = teacherSubmissions.filter(i => i.type === "รายงานวิจัยในชั้นเรียน");
+
+                const hasSent = teacherSubmissions.length > 0;
+
+                if (statusFilter === 'sent' && !hasSent) return;
+                if (statusFilter === 'pending' && hasSent) return;
+
+                if (searchTerm && !teacher.name.toLowerCase().includes(searchTerm) && !teacher.group.toLowerCase().includes(searchTerm)) {
+                    return;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+
+                const planTitleHtml = plans.length > 0
+                    ? plans.map(p => `<div class="text-sky-700 font-medium"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>${p.title}</div>`).join('')
+                    : `<span class="text-slate-400 italic">ยังไม่ได้ส่ง</span>`;
+
+                const researchTitleHtml = researches.length > 0
+                    ? researches.map(r => `<div class="text-indigo-700 font-medium"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>${r.title}</div>`).join('')
+                    : `<span class="text-slate-400 italic">ยังไม่ได้ส่ง</span>`;
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-semibold text-slate-800">${teacher.name}</td>
+                    <td class="py-3 px-4 text-xs">${planTitleHtml}</td>
+                    <td class="py-3 px-4 text-xs">${researchTitleHtml}</td>
+                    <td class="py-3 px-4 text-center">
+                        ${hasSent ? `
+                            <button onclick="previewFile('${teacherSubmissions[0].link}', '${teacherSubmissions[0].title}')" class="px-2.5 py-1 text-xs bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-lg font-medium transition">
+                                <i class="fa-solid fa-eye mr-1"></i>ดูเอกสาร
+                            </button>
+                        ` : `
+                            <span class="px-2.5 py-1 text-xs bg-rose-50 text-rose-600 rounded-lg font-medium">ยังไม่ส่ง</span>
+                        `}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterTeachers() {
+            renderTeacherStatusTable();
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+                alert('กรุณาเลือกไฟล์เอกสารประเภท PDF (.pdf) เท่านั้น');
+                e.target.value = '';
+                document.getElementById('file-name-display').innerText = 'รองรับเฉพาะไฟล์ .pdf เท่านั้น (ขนาดไม่เกิน 100MB)';
+                selectedFileData = null;
+                return;
+            }
+
+            const maxSizeInBytes = 100 * 1024 * 1024;
+            if (file.size > maxSizeInBytes) {
+                alert('ขนาดไฟล์เกินกำหนด (สูงสุดไม่เกิน 100 MB)');
+                e.target.value = '';
+                document.getElementById('file-name-display').innerText = 'รองรับเฉพาะไฟล์ .pdf เท่านั้น (ขนาดไม่เกิน 100MB)';
+                selectedFileData = null;
+                return;
+            }
+
+            const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+            document.getElementById('file-name-display').innerHTML = `<span class="font-bold text-emerald-600"><i class="fa-solid fa-check-circle mr-1"></i>${file.name} (${sizeInMB} MB)</span>`;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                selectedFileData = {
+                    base64: evt.target.result,
+                    name: file.name,
+                    mimeType: file.type
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function toggleLinkInput() {
+            const container = document.getElementById('link-input-container');
+            container.classList.toggle('hidden');
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const docType = document.querySelector('input[name="form-type"]:checked').value;
+            const fullname = document.getElementById('form-fullname').value;
+            const group = document.getElementById('form-group').value;
+            const term = document.getElementById('form-term').value;
+            const title = document.getElementById('form-title').value.trim();
+            const link = document.getElementById('form-link').value.trim();
+            const note = document.getElementById('form-note').value.trim();
+
+            const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+            const payload = {
+                timestamp: nowStr,
+                fullname: fullname,
+                group: group,
+                type: docType,
+                title: title,
+                term: term,
+                link: link || 'https://drive.google.com',
+                fileData: selectedFileData ? selectedFileData.base64 : null,
+                fileName: selectedFileData ? selectedFileData.name : null,
+                mimeType: selectedFileData ? selectedFileData.mimeType : null,
+                note: note,
+                status: 'รอการตรวจสอบ'
+            };
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังบันทึกข้อมูล...`;
+
+            if (scriptUrl) {
+                fetch(scriptUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).then(() => {
+                    alert('ส่งข้อมูลสำเร็จเรียบร้อยแล้ว!');
+                    resetFormAndReload(payload);
+                }).catch(err => {
+                    alert('เกิดข้อผิดพลาดในการส่งข้อมูล: ' + err);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> ยืนยันการส่งเอกสาร`;
+                });
+            } else {
+                setTimeout(() => {
+                    mockSubmissions.unshift(payload);
+                    alert('บันทึกข้อมูลเรียบร้อย (โหมด Demo)');
+                    resetFormAndReload(payload);
+                }, 1000);
+            }
+        }
+
+        function resetFormAndReload(payload) {
+            document.getElementById('submission-form').reset();
+            document.getElementById('file-name-display').innerText = 'รองรับเฉพาะไฟล์ .pdf เท่านั้น (ขนาดไม่เกิน 100MB)';
+            selectedFileData = null;
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> ยืนยันการส่งเอกสาร`;
+
+            switchTab('list');
+        }
+
+        function renderSubmissionsTable() {
+            const tbody = document.getElementById('submissions-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const searchTerm = (document.getElementById('search-submissions')?.value || '').toLowerCase();
+
+            const filtered = mockSubmissions.filter(item => {
+                return !searchTerm ||
+                    item.fullname.toLowerCase().includes(searchTerm) ||
+                    item.title.toLowerCase().includes(searchTerm) ||
+                    item.group.toLowerCase().includes(searchTerm) ||
+                    item.type.toLowerCase().includes(searchTerm);
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">ไม่พบรายการผลงานที่ส่ง</td></tr>`;
+                return;
+            }
+
+            filtered.forEach((item) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 text-xs text-slate-500">${item.timestamp}</td>
+                    <td class="py-3.5 px-4 text-xs font-semibold ${item.type === 'รายงานวิจัยในชั้นเรียน' ? 'text-indigo-600' : 'text-sky-600'}">${item.type}</td>
+                    <td class="py-3.5 px-4 font-semibold text-slate-800">${item.fullname}</td>
+                    <td class="py-3.5 px-4 text-slate-700">${item.title}</td>
+                    <td class="py-3.5 px-4 text-slate-600">${item.group}</td>
+                    <td class="py-3.5 px-4 text-center">
+                        <div class="flex justify-center gap-1.5">
+                            <button onclick="previewFile('${item.link}', '${item.title}')" class="px-2.5 py-1 text-xs bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-lg transition font-medium">
+                                <i class="fa-solid fa-eye mr-1"></i>ดู
+                            </button>
+                            <a href="${item.link}" target="_blank" class="px-2.5 py-1 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition font-medium">
+                                <i class="fa-solid fa-download mr-1"></i>โหลด
+                            </a>
+                        </div>
+                    </td>
+                    <td class="py-3.5 px-4 text-center">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-medium ${item.status === 'อนุมัติแล้ว' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                            ${item.status}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openConfigModal() {
+            let modal = document.getElementById('config-modal');
+            if (!modal) {
+                const modalDiv = document.createElement('div');
+                modalDiv.id = 'config-modal';
+                modalDiv.className = 'fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+                modalDiv.innerHTML = `
+                    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+                        <div class="flex items-center justify-between border-b pb-3">
+                            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-gear text-amber-500"></i> ตั้งค่า Google Apps Script API
+                            </h3>
+                            <button onclick="closeConfigModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                        </div>
+                        <p class="text-xs text-slate-500">วาง URL ของ Google Apps Script Web App ที่ Deploy เรียบร้อยแล้ว เพื่อดึงข้อมูล Realtime และแยกเก็บไฟล์เข้า Drive โฟลเดอร์ 01 เก็บแผน และ 02 เก็บวิจัย</p>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Web App URL:</label>
+                            <input type="url" id="script-url-input" value="${scriptUrl}" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                        </div>
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button onclick="saveConfigApi()" class="px-4 py-2 text-xs font-medium bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow">บันทึกตั้งค่า</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modalDiv);
+            } else {
+                modal.classList.remove('hidden');
+            }
+        }
+
+        function closeConfigModal() {
+            document.getElementById('config-modal').classList.add('hidden');
+        }
+
+        function saveConfigApi() {
+            const url = document.getElementById('script-url-input').value.trim();
+            localStorage.setItem('gsheet_script_url', url);
+            scriptUrl = url;
+            alert('บันทึกตั้งค่าเรียบร้อย');
+            closeConfigModal();
+            fetchLiveData();
+        }
+
+        function fetchLiveData() {
+            if (!scriptUrl) return;
+            fetch(scriptUrl)
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        mockSubmissions = data;
+                        initDashboard();
+                    }
+                }).catch(err => console.error("Error fetching live data:", err));
+        }
+
+        function previewFile(url, title) {
+            let modal = document.getElementById('preview-modal');
+            if (!modal) {
+                const modalDiv = document.createElement('div');
+                modalDiv.id = 'preview-modal';
+                modalDiv.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+                modalDiv.innerHTML = `
+                    <div class="bg-white rounded-2xl max-w-4xl w-full h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+                        <div class="p-4 bg-slate-800 text-white flex items-center justify-between">
+                            <h3 id="preview-modal-title" class="font-medium text-sm truncate mr-4"></h3>
+                            <button onclick="closePreviewModal()" class="text-slate-300 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                        </div>
+                        <div class="flex-grow bg-slate-100 relative">
+                            <iframe id="preview-iframe" class="w-full h-full" src="" frameborder="0"></iframe>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modalDiv);
+                modal = modalDiv;
+            }
+
+            let embedUrl = url;
+            if (url.includes('drive.google.com') && url.includes('/view')) {
+                embedUrl = url.replace('/view', '/preview');
+            }
+
+            document.getElementById('preview-modal-title').innerText = title;
+            document.getElementById('preview-iframe').src = embedUrl;
+            modal.classList.remove('hidden');
+        }
+
+        function closePreviewModal() {
+            document.getElementById('preview-modal').classList.add('hidden');
+            document.getElementById('preview-iframe').src = '';
+        }
+
+        function downloadFilteredCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            csvContent += "วัน-เวลาที่ส่ง,ประเภทงาน,ชื่อ-สกุล,ชื่อเรื่อง/วิชา,กลุ่มสาระ,ลิงก์ไฟล์,สถานะ\n";
+
+            mockSubmissions.forEach(item => {
+                csvContent += `"${item.timestamp}","${item.type}","${item.fullname}","${item.title}","${item.group}","${item.link}","${item.status}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `รายงานการส่งแผนและวิจัย_2569.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function downloadAllLinksTxt() {
+            let txtContent = "data:text/plain;charset=utf-8,";
+            mockSubmissions.forEach((item, index) => {
+                txtContent += `${index + 1}. [${item.type}] ${item.fullname} - ${item.title}\nURL: ${item.link}\n\n`;
+            });
+
+            const encodedUri = encodeURI(txtContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `รวมลิงก์เอกสาร_2569.txt`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
